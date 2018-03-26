@@ -1,18 +1,26 @@
 import React, { Component } from 'react';
 import { Tasks } from '../api/tasks.js';
+import { Meteor } from 'meteor/meteor';
  
 // Task component - represents a single todo item
 export default class Task extends Component {
   
 toggleChecked() {
     // Set the checked property to the opposite of its current value
-    Tasks.update(this.props.task._id, {
-      $set: { checked: !this.props.task.checked },
-    });
+    // Tasks.update(this.props.task._id, {
+    //   $set: { checked: !this.props.task.checked },
+    // });
+
+    //con esto agregamos seguirdad por que llamamos los metodos que se crean en el componente de MongoDB
+    // Set the checked property to the opposite of its current value
+    Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
 }
  
 deleteThisTask() {
-    Tasks.remove(this.props.task._id);
+    //Tasks.remove(this.props.task._id);
+    
+    //se agrega suguiridad mirando si esta logeado el usuario llamando los metodos del componente de mongo db en la app
+    Meteor.call('tasks.remove', this.props.task._id);
 }
 
   render() {
