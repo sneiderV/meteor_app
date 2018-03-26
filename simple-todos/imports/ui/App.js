@@ -13,8 +13,16 @@ class App extends Component {
   //     { _id: 3, text: 'This is task 3' },
   //   ];
   // }
-  
-  //Metodo para escuchar las acciones del usuario en el navegador
+
+ constructor(props) {
+    super(props);
+ 
+    this.state = {
+      hideCompleted: false,
+    };
+  } 
+
+ //Metodo para escuchar las acciones del usuario en el navegador 
  handleSubmit(event) {
     event.preventDefault();
  
@@ -30,9 +38,22 @@ class App extends Component {
     ReactDOM.findDOMNode(this.refs.textInput).value = '';
   }
 
+  //se actualiza el estado de forma asincronica y luego hra que el componente se vuelva a rederizar
+  toggleHideCompleted() {
+    this.setState({
+      hideCompleted: !this.state.hideCompleted,
+    });
+  }
+
   renderTasks() {
+    //filtrar las tareas
+    let filteredTasks = this .props.tasks;
+    if ( this .state.hideCompleted) {
+      filteredTasks = filteredTasks.filter (task =>! task.checked);
+    }
+    return filteredTasks.map ((task) => (
     //return this.getTasks().map((task) => (
-    return this.props.tasks.map((task) => (
+    //return this.props.tasks.map((task) => (
       <Task key={task._id} task={task} />
     ));
   }
@@ -41,8 +62,19 @@ class App extends Component {
     return (
       <div className="container">
         <header>
-          <h1>Todo List</h1>
-        </header>
+           <h1>Todo List ({this.props.incompleteCount})</h1>
+          
+          {/*casilla de verificacion*/}
+          <label className="hide-completed">
+            <input
+              type="checkbox"
+              readOnly
+              checked={this.state.hideCompleted}
+              onClick={this.toggleHideCompleted.bind(this)}
+            />
+            Hide Completed Tasks
+          </label> 
+
           {/*formulario para agregar una tarea*/}
           <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
             <input
@@ -51,6 +83,9 @@ class App extends Component {
               placeholder="Type to add new tasks"
             />
           </form>
+        </header>
+      
+         
 
         <ul>
           {this.renderTasks()}
@@ -63,5 +98,6 @@ class App extends Component {
 export default withTracker(() => {
   return {
     tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
+     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
   };
 })(App);
